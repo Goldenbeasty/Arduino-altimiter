@@ -30,14 +30,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
 
-void setup() {
-  Serial.begin(9600);
+int currentscreen = 0;
+int lastcycletime = 0;
 
-  if (!bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID)) { // My sensor sits on 0x76 so I had to use the alternative address
-    Serial.println(F("Could not find a valid BMP280 sensor, check wiring or "
-                      "try a different address!"));
-    while (1) delay(10);
-  }
+void setup() {
+  bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);  // My sensor sits on 0x76 so I had to use the alternative address
 
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
                   Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
@@ -54,6 +51,28 @@ void setup() {
 }
 
 void loop() {
+
+  if (currentscreen == 0){
+    display.setCursor(2,2);
+    display.setTextSize(4);
+    display.setTextColor(SSD1306_WHITE);
+    display.print(bmp.readAltitude(sealevelpressure));
+  }
+  if (currentscreen == 1){
+    display.setCursor(2,2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setTextSize(1);
+    display.print(bmp.readAltitude(sealevelpressure));
+    display.setCursor(2,12);
+    display.print(bmp.readPressure());
+    display.setCursor(2,22);
+    display.print(sealevelpressure);
+    display.setCursor(64,2);
+    display.print(bmp.readTemperature());
+    display.setCursor(64,12);
+    display.print(millis() - lastcycletime);
+    lastcycletime = millis();
+  }
   
   display.setTextColor(SSD1306_WHITE);
   display.setTextSize(2);
