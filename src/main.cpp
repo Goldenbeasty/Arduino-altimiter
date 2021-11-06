@@ -30,8 +30,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
 
-float last = 0; //DEBUG
-
 void setup() {
   Serial.begin(9600);
 
@@ -41,7 +39,6 @@ void setup() {
     while (1) delay(10);
   }
 
-  /* Default settings from datasheet. */
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
                   Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
                   Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
@@ -63,26 +60,8 @@ void loop() {
   display.setCursor(2,2);
   display.print(encoder->getPosition());
 
-  Serial.print(F("Temperature = "));
-  Serial.print(bmp.readTemperature());
-  Serial.println(" *C");
-
-  Serial.print(F("Pressure = "));
-  Serial.print(bmp.readPressure());
-  Serial.println(" Pa");
-
-  Serial.print(F("Approx altitude = "));
-  Serial.print(bmp.readAltitude(1003.25));
-  Serial.println(" m");
-
-  Serial.println();
-
   display.setCursor(32,2);
   display.print(bmp.readAltitude(sealevelpressure));
-
-  display.setCursor(2,16); //DEBUG
-  display.print(micros() - last); //DEBUG
-  last = micros(); //DEBUG
 
   display.display();
   display.clearDisplay();
