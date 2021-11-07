@@ -5,7 +5,10 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h> // 0x3C
 #include <RotaryEncoder.h>
-#include <EnableInterrupt.h>
+
+//Variables for screens
+volatile int currentscreen = 1;
+volatile int lastcycletime = 0;
 
 //BMP280 setup
 Adafruit_BMP280 bmp;
@@ -17,16 +20,21 @@ int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
 
 //Encoder setup
 void checkPosition();
-
 #define BUTTON_PIN 5
 #define DEBOUNCE_DELAY 100
-uint32_t last_interrupt_time = 0; // Debgu?
+uint32_t last_interrupt_time = 0;
 void isr_handler();
 
 void isr_handler() {
   uint32_t interrupt_time = millis();
   if (interrupt_time - last_interrupt_time > DEBOUNCE_DELAY) {
     // Code here for button press
+    if (currentscreen == 0){ //TMP
+      currentscreen = 1;
+    }
+    else{
+      currentscreen = 0;
+    }
 
   }
 
@@ -48,10 +56,6 @@ void checkPosition(){
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-//Variables for screens
-int currentscreen = 0;
-int lastcycletime = 0;
-
 void setup() {
   bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);  // My sensor sits on 0x76 so I had to use the alternative address
 
@@ -62,11 +66,11 @@ void setup() {
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
   encoder = new RotaryEncoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::FOUR3);
-  // attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
-  // attachInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
-  enableInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
-  enableInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
-  enableInterrupt(BUTTON_PIN, isr_handler, RISING);
+  attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
+  // enableInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
+  // enableInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
+  // enableInterrupt(BUTTON_PIN, isr_handler, RISING);
 
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS); //initialize display
 
@@ -94,15 +98,17 @@ void loop() {
     display.setCursor(64,12);
     display.print(millis() - lastcycletime);
     lastcycletime = millis();
+    display.setCursor(64,22);
+    display.print(encoder->getPosition());
   }
   
-  display.setTextColor(SSD1306_WHITE);
-  display.setTextSize(2);
-  display.setCursor(2,2);
-  display.print(encoder->getPosition());
+  // display.setTextColor(SSD1306_WHITE);
+  // display.setTextSize(2);
+  // display.setCursor(2,2);
+  // display.print(encoder->getPosition());
 
-  display.setCursor(32,2);
-  display.print(bmp.readAltitude(sealevelpressure));
+  // display.setCursor(32,2);
+  // display.print(bmp.readAltitude(sealevelpressure));
 
   display.display();
   display.clearDisplay();
