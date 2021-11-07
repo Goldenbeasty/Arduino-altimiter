@@ -19,28 +19,6 @@ Adafruit_BMP280 bmp;
 int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
 
 //Encoder setup
-void checkPosition();
-#define BUTTON_PIN 5
-#define DEBOUNCE_DELAY 100
-uint32_t last_interrupt_time = 0;
-void isr_handler();
-
-void isr_handler() {
-  uint32_t interrupt_time = millis();
-  if (interrupt_time - last_interrupt_time > DEBOUNCE_DELAY) {
-    // Code here for button press
-    if (currentscreen == 0){ //TMP
-      currentscreen = 1;
-    }
-    else{
-      currentscreen = 0;
-    }
-
-  }
-
-  last_interrupt_time = interrupt_time;
-}
-
 RotaryEncoder *encoder = nullptr;
 
 void checkPosition(){
@@ -68,15 +46,13 @@ void setup() {
   encoder = new RotaryEncoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::FOUR3);
   attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
   attachInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
-  // enableInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
-  // enableInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
-  // enableInterrupt(BUTTON_PIN, isr_handler, RISING);
 
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS); //initialize display
-
+  encoder->setPosition(sealevelpressure);
 }
 
 void loop() {
+  sealevelpressure = encoder->getPosition();
 
   if (currentscreen == 0){
     display.setCursor(2,2);
