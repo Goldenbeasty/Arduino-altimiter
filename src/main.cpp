@@ -5,21 +5,26 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h> // 0x3C
 #include <RotaryEncoder.h>
+#include <EnableInterrupt.h>
 
+//BMP280 setup
 Adafruit_BMP280 bmp;
 
 #define PIN_IN1 2
 #define PIN_IN2 3
 
+int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
+
+//Encoder setup
 void checkPosition();
 
 RotaryEncoder *encoder = nullptr;
 
-void checkPosition()
-{
+void checkPosition(){
   encoder->tick(); // just call tick() to check the state.
 }
 
+// OLED setup
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 
@@ -28,8 +33,7 @@ void checkPosition()
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
-
+//Variables for screens
 int currentscreen = 0;
 int lastcycletime = 0;
 
@@ -43,8 +47,10 @@ void setup() {
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
   encoder = new RotaryEncoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::FOUR3);
-  attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
+  // attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
+  // attachInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
+  enableInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
+  enableInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
 
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS); //initialize display
 
