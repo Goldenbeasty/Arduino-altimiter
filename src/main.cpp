@@ -75,6 +75,7 @@ void loop() {
       encoder->setPosition(currentscreen);
       Serial.print("end"); //DEBUG
     }
+    last_rotButton = cycletime;
   }
 
   if (currentscreen == 1 and select_sealevel){
