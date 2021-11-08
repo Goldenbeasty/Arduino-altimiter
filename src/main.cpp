@@ -44,9 +44,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
   bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);  // My sensor sits on 0x76 so I had to use the alternative address
-
-      Serial.begin(9600); //DEBUG
-
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
                   Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
                   Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
@@ -74,8 +71,6 @@ void loop() {
     else if (currentscreen == 1 and select_sealevel){
       select_sealevel = false;
       last_Encoder_pos_screen = encoder->getPosition();
-      // encoder->setPosition(currentscreen);
-      // Serial.print("end"); //DEBUG
     }
     last_rotButton = cycletime;
   }
@@ -127,8 +122,6 @@ void loop() {
     display.print(select_sealevel);
   }
 
-
-      Serial.println(currentscreen); //DEBUG
   display.display();
   display.clearDisplay();
 }
