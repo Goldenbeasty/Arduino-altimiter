@@ -72,8 +72,9 @@ void loop() {
     }
     else if (currentscreen == 1 and select_sealevel){
       select_sealevel = false;
-      encoder->setPosition(currentscreen);
-      Serial.print("end"); //DEBUG
+      last_Encoder_pos_screen = encoder->getPosition();
+      // encoder->setPosition(currentscreen);
+      // Serial.print("end"); //DEBUG
     }
     last_rotButton = cycletime;
   }
@@ -82,7 +83,6 @@ void loop() {
     sealevelpressure = encoder->getPosition();
   }
   else if (select_sealevel != true){
-    // currentscreen = encoder->getPosition();
     int rotPos = encoder->getPosition();
     if (rotPos == last_Encoder_pos_screen){
       rotDir = 0; 
@@ -95,12 +95,6 @@ void loop() {
     }
     
     currentscreen = currentscreen + rotDir;
-    // if (rotPos < NoOfScreens and rotDir == 1){
-    //   currentscreen = currentscreen + rotDir;
-    // }
-    // if (rotPos > 0 and rotDir == -1){
-    //   currentscreen = currentscreen + rotDir;
-    // }
     last_Encoder_pos_screen = rotPos;
   }
 
@@ -122,7 +116,7 @@ void loop() {
     display.setCursor(64,2);
     display.print(bmp.readTemperature());
     display.setCursor(64,12);
-    display.print(cycletime - lastcycletime);
+    // display.print(cycletime - lastcycletime);
     lastcycletime = cycletime;
     display.setCursor(64,22);
     display.print(encoder->getPosition());
