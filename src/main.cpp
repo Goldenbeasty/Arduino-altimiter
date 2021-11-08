@@ -13,6 +13,7 @@ bool select_sealevel = false;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 int cycletime = 0;
+#define NoOfScreens 2 //Remember to update when adding new screens
 
 //BMP280 setup
 Adafruit_BMP280 bmp;
@@ -91,6 +92,12 @@ void loop() {
     }
     
     currentscreen = currentscreen + rotDir;
+    if (currentscreen > (NoOfScreens -1)){
+      currentscreen = NoOfScreens - 1;
+    }
+    else if (currentscreen < -1){
+      currentscreen = -1;
+    }
     last_Encoder_pos_screen = rotPos;
   }
 
