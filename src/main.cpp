@@ -12,6 +12,7 @@ int lastcycletime = 0;
 bool select_sealevel = false;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
+int cycletime = 0;
 
 //BMP280 setup
 Adafruit_BMP280 bmp;
@@ -29,8 +30,8 @@ void checkPosition(){
 }
 
 #define rotButton 4
-#define debounce_time 100
-uint32_t last_rotButton = 0;
+#define debounce_time 500
+int last_rotButton = 0;
 
 // OLED setup
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -63,7 +64,7 @@ void setup() {
 }
 
 void loop() {
-  uint32_t cycletime = millis();
+  cycletime = millis();
 
   if(digitalRead(rotButton) == LOW and (cycletime - last_rotButton) > debounce_time){
     if (currentscreen == 1 and select_sealevel != true){
@@ -116,7 +117,7 @@ void loop() {
     display.setCursor(64,2);
     display.print(bmp.readTemperature());
     display.setCursor(64,12);
-    // display.print(cycletime - lastcycletime);
+    display.print(cycletime - lastcycletime);
     lastcycletime = cycletime;
     display.setCursor(64,22);
     display.print(encoder->getPosition());
