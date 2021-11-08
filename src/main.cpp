@@ -10,7 +10,6 @@
 int currentscreen = 1;
 int lastcycletime = 0;
 bool select_sealevel = false;
-#define NoOfScreens 2
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 
@@ -74,7 +73,7 @@ void loop() {
     else if (currentscreen == 1 and select_sealevel){
       select_sealevel = false;
       encoder->setPosition(currentscreen);
-      Serial.print("end");
+      Serial.print("end"); //DEBUG
     }
   }
 
