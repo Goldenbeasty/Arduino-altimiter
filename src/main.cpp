@@ -5,6 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h> // 0x3C
 #include <RotaryEncoder.h>
+#include <EEPROM.h>
 
 //Variables for screens
 int currentscreen = 1;
@@ -14,6 +15,8 @@ int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 int cycletime = 0;
 #define NoOfScreens 2 //Remember to update when adding new screens
+int eepromimport =  0; // if migrating to floats for accruacy switch the line 26 as well
+#define EEPROM_sealevelpressure_addr 0
 
 //BMP280 setup
 Adafruit_BMP280 bmp;
@@ -44,6 +47,13 @@ int last_rotButton = 0;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
+
+  EEPROM.get(EEPROM_sealevelpressure_addr, eepromimport);
+  if (eepromimport < 2){
+    eepromimport = SENSORS_PRESSURE_SEALEVELHPA; // Try to reset EEPROM address because of course there was already something written there
+  }
+  sealevelpressure = eepromimport;
+
   bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);  // My sensor sits on 0x76 so I had to use the alternative address
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
                   Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
@@ -71,6 +81,7 @@ void loop() {
     }
     else if (currentscreen == 1 and select_sealevel){
       select_sealevel = false;
+      EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
       last_Encoder_pos_screen = encoder->getPosition();
     }
     last_rotButton = cycletime;
