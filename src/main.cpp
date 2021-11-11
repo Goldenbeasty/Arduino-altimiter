@@ -141,7 +141,7 @@ void loop() {
     display.setCursor(98,12);
     display.print(select_sealevel);
     display.setCursor(98,22);
-    display.print(analogRead(Batvolt));
+    display.print(analogRead(Batvolt) * (5.0 / 1023.0));
   }
 
   display.display();
