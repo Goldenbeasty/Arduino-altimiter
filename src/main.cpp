@@ -17,6 +17,7 @@ int cycletime = 0;
 #define NoOfScreens 2 //Remember to update when adding new screens
 int eepromimport =  0; // if migrating to floats for accruacy switch the line 26 as well
 #define EEPROM_sealevelpressure_addr 0
+#define Batvolt A7
 
 //BMP280 setup
 Adafruit_BMP280 bmp;
@@ -69,6 +70,7 @@ void setup() {
   encoder->setPosition(sealevelpressure);
 
   pinMode(rotButton, INPUT_PULLUP);
+  pinMode(Batvolt, INPUT);
 }
 
 void loop() {
@@ -138,6 +140,8 @@ void loop() {
     display.print(currentscreen);
     display.setCursor(98,12);
     display.print(select_sealevel);
+    display.setCursor(98,22);
+    display.print(analogRead(Batvolt));
   }
 
   display.display();
