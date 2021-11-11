@@ -22,8 +22,8 @@ int eepromimport =  0; // if migrating to floats for accruacy switch the line 26
 //BMP280 setup
 Adafruit_BMP280 bmp;
 
-#define PIN_IN1 2
-#define PIN_IN2 3
+#define PIN_IN1 3
+#define PIN_IN2 2
 
 int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
 
