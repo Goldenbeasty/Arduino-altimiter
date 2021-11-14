@@ -10,12 +10,12 @@
 //Variables for screens
 int currentscreen = 0;
 long lastcycletime = 0; // currently only on debug screen
-bool select_sealevel = false;
+int select_sealevel = 0;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 long cycletime = 0;
 #define NoOfScreens 3 //Remember to update when adding new screens
-int eepromimport =  0; // if migrating to floats for accruacy switch int sealevelpressure as well
+float eepromimport =  0; // if migrating to floats for accruacy switch int sealevelpressure as well
 #define EEPROM_sealevelpressure_addr 0
 #define Batvolt A7
 
@@ -25,7 +25,7 @@ Adafruit_BMP280 bmp;
 #define PIN_IN1 3
 #define PIN_IN2 2
 
-int sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
+float sealevelpressure = SENSORS_PRESSURE_SEALEVELHPA;
 
 //Encoder setup
 RotaryEncoder *encoder = nullptr;
@@ -71,28 +71,42 @@ void setup() {
 
   pinMode(rotButton, INPUT_PULLUP);
   pinMode(Batvolt, INPUT);
+
+  Serial.begin(9600);
 }
 
 void loop() {
   cycletime = millis();
 
   if(digitalRead(rotButton) == LOW and (cycletime - last_rotButton) > debounce_time){
-    if (currentscreen == 1 and select_sealevel != true){
-      select_sealevel = true;
+    if (currentscreen == 1 and select_sealevel == 0){
+      select_sealevel = 1;
       encoder->setPosition(sealevelpressure);
     }
-    else if (currentscreen == 1 and select_sealevel){
-      select_sealevel = false;
+    else if (currentscreen == 1 and select_sealevel == 1){
+      select_sealevel = 2;
+      EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
+      last_Encoder_pos_screen = encoder->getPosition();
+      encoder->setPosition(sealevelpressure * 10);
+    }
+    else if (currentscreen == 1 and select_sealevel == 2){
+      select_sealevel = 0;
+      // sealevelpressure = sealevelpressure / 10;
       EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
       last_Encoder_pos_screen = encoder->getPosition();
     }
     last_rotButton = cycletime;
   }
 
-  if (currentscreen == 1 and select_sealevel){
+  if (currentscreen == 1 and select_sealevel == 1){
     sealevelpressure = encoder->getPosition();
   }
-  else if (select_sealevel != true){
+  else if (currentscreen == 1 and select_sealevel == 2){
+    sealevelpressure = encoder->getPosition() / 10.0F;
+    Serial.println("hello");
+    Serial.print(sealevelpressure);
+  }
+  else if (select_sealevel == 0){
     int rotPos = encoder->getPosition();
     if (rotPos == last_Encoder_pos_screen){
       rotDir = 0; 
