@@ -10,7 +10,7 @@
 //Variables for screens
 int currentscreen = 0;
 long lastcycletime = 0; // currently only on debug screen
-bool select_sealevel = false;
+int select_sealevel = 0;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 long cycletime = 0;
@@ -77,14 +77,17 @@ void loop() {
   cycletime = millis();
 
   if(digitalRead(rotButton) == LOW and (cycletime - last_rotButton) > debounce_time){
-    if (currentscreen == 1 and select_sealevel != true){
-      select_sealevel = true;
+    if (currentscreen == 1 and select_sealevel == 0){
+      select_sealevel = 1;
       encoder->setPosition(sealevelpressure);
     }
-    else if (currentscreen == 1 and select_sealevel){
-      select_sealevel = false;
+    else if (currentscreen == 1 and select_sealevel == 1){
+      select_sealevel = 1;
       EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
       last_Encoder_pos_screen = encoder->getPosition();
+    }
+    else if (currentscreen == 1 and select_sealevel == 2){
+      select_sealevel = 0;
     }
     last_rotButton = cycletime;
   }
