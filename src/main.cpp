@@ -8,14 +8,14 @@
 #include <EEPROM.h>
 
 //Variables for screens
-int currentscreen = 1;
-int lastcycletime = 0;
+int currentscreen = 0;
+long lastcycletime = 0; // currently only on debug screen
 bool select_sealevel = false;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
-int cycletime = 0;
-#define NoOfScreens 2 //Remember to update when adding new screens
-int eepromimport =  0; // if migrating to floats for accruacy switch the line 26 as well
+long cycletime = 0;
+#define NoOfScreens 3 //Remember to update when adding new screens
+int eepromimport =  0; // if migrating to floats for accruacy switch int sealevelpressure as well
 #define EEPROM_sealevelpressure_addr 0
 #define Batvolt A7
 
@@ -36,7 +36,7 @@ void checkPosition(){
 
 #define rotButton 4
 #define debounce_time 500
-int last_rotButton = 0;
+long last_rotButton = 0;
 
 // OLED setup
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -120,7 +120,7 @@ void loop() {
     display.setTextColor(SSD1306_WHITE);
     display.print(bmp.readAltitude(sealevelpressure));
   }
-  if (currentscreen > 0){
+  if (currentscreen == 1){
     display.setCursor(2,2);
     display.setTextColor(SSD1306_WHITE);
     display.setTextSize(1);
@@ -142,6 +142,24 @@ void loop() {
     display.print(select_sealevel);
     display.setCursor(98,22);
     display.print(analogRead(Batvolt) * (5.0 / 1023.0));
+    display.setCursor(108,2);
+    display.print(digitalRead(rotButton));
+  }
+  if (currentscreen == 2){
+    display.setCursor(2,2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setTextSize(1);
+    display.print(select_sealevel);
+    display.setCursor(2,12);
+    display.print(digitalRead(rotButton));
+    display.setCursor(2,22);
+    display.print(millis());
+    display.setCursor(64,2);
+    display.print(cycletime);
+    display.setCursor(64,12);
+    display.print(last_rotButton);
+    display.setCursor(64,22);
+    display.print((cycletime - last_rotButton) > debounce_time);
   }
 
   display.display();
