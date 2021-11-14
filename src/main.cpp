@@ -71,6 +71,8 @@ void setup() {
 
   pinMode(rotButton, INPUT_PULLUP);
   pinMode(Batvolt, INPUT);
+
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -82,15 +84,16 @@ void loop() {
       encoder->setPosition(sealevelpressure);
     }
     else if (currentscreen == 1 and select_sealevel == 1){
-      select_sealevel = 1;
+      select_sealevel = 2;
       EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
       last_Encoder_pos_screen = encoder->getPosition();
       encoder->setPosition(sealevelpressure * 10);
     }
     else if (currentscreen == 1 and select_sealevel == 2){
       select_sealevel = 0;
-      sealevelpressure = sealevelpressure / 10;
+      // sealevelpressure = sealevelpressure / 10;
       EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
+      last_Encoder_pos_screen = encoder->getPosition();
     }
     last_rotButton = cycletime;
   }
@@ -99,7 +102,9 @@ void loop() {
     sealevelpressure = encoder->getPosition();
   }
   else if (currentscreen == 1 and select_sealevel == 2){
-    sealevelpressure = encoder->getPosition() / 10;
+    sealevelpressure = encoder->getPosition() / 10.0F;
+    Serial.println("hello");
+    Serial.print(sealevelpressure);
   }
   else if (select_sealevel == 0){
     int rotPos = encoder->getPosition();
