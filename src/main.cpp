@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1306.h> // 0x3C
 #include <RotaryEncoder.h>
 #include <EEPROM.h>
+#include <avr/sleep.h>
 
 //Variables for screens
 int currentscreen = 0;
@@ -18,6 +19,11 @@ long cycletime = 0;
 float eepromimport =  0; // if migrating to floats for accruacy switch int sealevelpressure as well
 #define EEPROM_sealevelpressure_addr 0
 #define Batvolt A7
+
+//sleeping state
+float gotosleepat = 0;
+bool waitingforsleep = false;
+#define time_until_sleep 10000
 
 //BMP280 setup
 Adafruit_BMP280 bmp;
@@ -47,6 +53,12 @@ long last_rotButton = 0;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+void wakeup(){
+  sleep_disable();
+  detachInterrupt(PIN_IN1);
+  attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
+}
+
 void setup() {
 
   EEPROM.get(EEPROM_sealevelpressure_addr, eepromimport);
@@ -60,7 +72,7 @@ void setup() {
                   Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
                   Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
                   Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+                  Adafruit_BMP280::STANDBY_MS_63); /* Standby time. */
 
   encoder = new RotaryEncoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::FOUR3);
   attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
@@ -89,7 +101,6 @@ void loop() {
     }
     else if (currentscreen == 1 and select_sealevel == 2){
       select_sealevel = 0;
-      // sealevelpressure = sealevelpressure / 10;
       EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
       last_Encoder_pos_screen = encoder->getPosition();
     }
@@ -123,7 +134,22 @@ void loop() {
     }
     last_Encoder_pos_screen = rotPos;
   }
-
+  if (currentscreen != -1 and gotosleepat != 0){
+    gotosleepat = 0;
+  }
+  if (currentscreen == -1){
+    if (gotosleepat == 0){
+      waitingforsleep = true;
+      gotosleepat = cycletime + time_until_sleep;
+    }
+    if (gotosleepat != 0 and cycletime > gotosleepat){
+      sleep_enable();
+      detachInterrupt(PIN_IN1);
+      attachInterrupt(digitalPinToInterrupt(PIN_IN1), wakeup, CHANGE);
+      set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+      sleep_cpu();
+    }
+  }
   if (currentscreen == 0){
     display.setCursor(2,2);
     display.setTextSize(4);
@@ -170,6 +196,7 @@ void loop() {
     display.print(last_rotButton);
     display.setCursor(64,22);
     display.print((cycletime - last_rotButton) > debounce_time);
+    display.setCursor(96,2);
   }
 
   display.display();
