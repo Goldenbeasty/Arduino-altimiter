@@ -71,8 +71,6 @@ void setup() {
 
   pinMode(rotButton, INPUT_PULLUP);
   pinMode(Batvolt, INPUT);
-
-  Serial.begin(9600);
 }
 
 void loop() {
@@ -103,8 +101,6 @@ void loop() {
   }
   else if (currentscreen == 1 and select_sealevel == 2){
     sealevelpressure = encoder->getPosition() / 10.0F;
-    Serial.println("hello");
-    Serial.print(sealevelpressure);
   }
   else if (select_sealevel == 0){
     int rotPos = encoder->getPosition();
