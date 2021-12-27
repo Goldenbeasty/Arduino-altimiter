@@ -22,7 +22,6 @@ float eepromimport =  0; // if migrating to floats for accruacy switch int seale
 
 //sleeping state
 float gotosleepat = 0;
-bool waitingforsleep = false;
 #define time_until_sleep 10000
 
 //BMP280 setup
@@ -86,10 +85,10 @@ void setup() {
 }
 
 void loop() {
-  cycletime = millis();
+  cycletime = millis(); // dynamic variable that is going to be called multiple times, so I call it here once, might n even be remotely needed
 
-  if(digitalRead(rotButton) == LOW and (cycletime - last_rotButton) > debounce_time){
-    if (currentscreen == 1 and select_sealevel == 0){
+  if(digitalRead(rotButton) == LOW and (cycletime - last_rotButton) > debounce_time){ // mess of code that is responsible for setting sealevel pressure
+    if (currentscreen == 1 and select_sealevel == 0){ // if currently on changing screen and in screen changing mode
       select_sealevel = 1;
       encoder->setPosition(sealevelpressure);
     }
@@ -107,13 +106,13 @@ void loop() {
     last_rotButton = cycletime;
   }
 
-  if (currentscreen == 1 and select_sealevel == 1){
+  if (currentscreen == 1 and select_sealevel == 1){ // if it is being changed, just dump it to the variable
     sealevelpressure = encoder->getPosition();
   }
-  else if (currentscreen == 1 and select_sealevel == 2){
+  else if (currentscreen == 1 and select_sealevel == 2){ // same but for tens
     sealevelpressure = encoder->getPosition() / 10.0F;
   }
-  else if (select_sealevel == 0){
+  else if (select_sealevel == 0){ // change screens once per cycle even if scroll is faster
     int rotPos = encoder->getPosition();
     if (rotPos == last_Encoder_pos_screen){
       rotDir = 0; 
@@ -126,23 +125,22 @@ void loop() {
     }
     
     currentscreen = currentscreen + rotDir;
-    if (currentscreen > (NoOfScreens -1)){
+    if (currentscreen > (NoOfScreens - 1)){
       currentscreen = NoOfScreens - 1;
     }
-    else if (currentscreen < -1){
-      currentscreen = -1;
+    else if (currentscreen < -1){ 
+      currentscreen = -1; // sleep screen
     }
     last_Encoder_pos_screen = rotPos;
   }
-  if (currentscreen != -1 and gotosleepat != 0){
+  if (currentscreen != -1 and gotosleepat != 0){ // sets allow sleep to false if it already isn't and id current screen isn't the sleep screen
     gotosleepat = 0;
   }
-  if (currentscreen == -1){
+  if (currentscreen == -1){ // in case of sleep screen
     if (gotosleepat == 0){
-      waitingforsleep = true;
-      gotosleepat = cycletime + time_until_sleep;
+      gotosleepat = cycletime + time_until_sleep; // calculate time when to go to sleep
     }
-    if (gotosleepat != 0 and cycletime > gotosleepat){
+    if (gotosleepat != 0 and cycletime > gotosleepat){ // send to sleep if sleep is allowed and the time is up
       sleep_enable();
       detachInterrupt(PIN_IN1);
       attachInterrupt(digitalPinToInterrupt(PIN_IN1), wakeup, CHANGE);
@@ -150,7 +148,8 @@ void loop() {
       sleep_cpu();
     }
   }
-  if (currentscreen == 0){
+
+  if (currentscreen == 0){ // first screen
     display.setCursor(2,2);
     display.setTextSize(4);
     display.setTextColor(SSD1306_WHITE);
