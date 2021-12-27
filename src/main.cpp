@@ -15,12 +15,13 @@ int select_sealevel = 0;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 long cycletime = 0;
-#define NoOfScreens 3 //Remember to update when adding new screens
+#define NoOfScreens 4 //Remember to update when adding new screens
 float eepromimport =  0; // if migrating to floats for accruacy switch int sealevelpressure as well
 #define EEPROM_sealevelpressure_addr 0
 #define Batvolt A7
+#define sealevelpressurechangescreen 3 //god I am good at naming variables
 
-//sleeping state
+//sleeping configuration
 float gotosleepat = 0;
 #define time_until_sleep 10000
 
@@ -58,6 +59,12 @@ void wakeup(){
   attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
 }
 
+void default_screensetup(int textsize){
+  display.setCursor(2,2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(textsize);
+}
+
 void setup() {
 
   EEPROM.get(EEPROM_sealevelpressure_addr, eepromimport);
@@ -88,17 +95,17 @@ void loop() {
   cycletime = millis(); // dynamic variable that is going to be called multiple times, so I call it here once, might n even be remotely needed
 
   if(digitalRead(rotButton) == LOW and (cycletime - last_rotButton) > debounce_time){ // mess of code that is responsible for setting sealevel pressure
-    if (currentscreen == 1 and select_sealevel == 0){ // if currently on changing screen and in screen changing mode
+    if (currentscreen == sealevelpressurechangescreen and select_sealevel == 0){ // if currently on changing screen and in screen changing mode
       select_sealevel = 1;
       encoder->setPosition(sealevelpressure);
     }
-    else if (currentscreen == 1 and select_sealevel == 1){
+    else if (currentscreen == sealevelpressurechangescreen and select_sealevel == 1){
       select_sealevel = 2;
       EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
       last_Encoder_pos_screen = encoder->getPosition();
       encoder->setPosition(sealevelpressure * 10);
     }
-    else if (currentscreen == 1 and select_sealevel == 2){
+    else if (currentscreen == sealevelpressurechangescreen and select_sealevel == 2){
       select_sealevel = 0;
       EEPROM.put(EEPROM_sealevelpressure_addr, sealevelpressure);
       last_Encoder_pos_screen = encoder->getPosition();
@@ -106,10 +113,10 @@ void loop() {
     last_rotButton = cycletime;
   }
 
-  if (currentscreen == 1 and select_sealevel == 1){ // if it is being changed, just dump it to the variable
+  if (currentscreen == sealevelpressurechangescreen and select_sealevel == 1){ // if it is being changed, just dump it to the variable
     sealevelpressure = encoder->getPosition();
   }
-  else if (currentscreen == 1 and select_sealevel == 2){ // same but for tens
+  else if (currentscreen == sealevelpressurechangescreen and select_sealevel == 2){ // same but for tens
     sealevelpressure = encoder->getPosition() / 10.0F;
   }
   else if (select_sealevel == 0){ // change screens once per cycle even if scroll is faster
@@ -150,15 +157,11 @@ void loop() {
   }
 
   if (currentscreen == 0){ // first screen
-    display.setCursor(2,2);
-    display.setTextSize(4);
-    display.setTextColor(SSD1306_WHITE);
+    default_screensetup(4);
     display.print(bmp.readAltitude(sealevelpressure));
   }
   if (currentscreen == 1){
-    display.setCursor(2,2);
-    display.setTextColor(SSD1306_WHITE);
-    display.setTextSize(1);
+    default_screensetup(1);
     display.print(bmp.readAltitude(sealevelpressure));
     display.setCursor(2,12);
     display.print(bmp.readPressure());
@@ -181,9 +184,7 @@ void loop() {
     display.print(digitalRead(rotButton));
   }
   if (currentscreen == 2){
-    display.setCursor(2,2);
-    display.setTextColor(SSD1306_WHITE);
-    display.setTextSize(1);
+    default_screensetup(1);
     display.print(select_sealevel);
     display.setCursor(2,12);
     display.print(digitalRead(rotButton));
@@ -196,6 +197,19 @@ void loop() {
     display.setCursor(64,22);
     display.print((cycletime - last_rotButton) > debounce_time);
     display.setCursor(96,2);
+  }
+  if (currentscreen == sealevelpressurechangescreen){
+    default_screensetup(2);
+    display.print((bmp.readPressure()) / 100.0F);
+    display.setCursor(2, 18);
+    if (select_sealevel != 0){
+      display.setTextColor(BLACK,WHITE);
+    }
+    display.print(sealevelpressure);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(87, 4);
+    display.setTextSize(1);
+    display.print(bmp.readAltitude(sealevelpressure));
   }
 
   display.display();
