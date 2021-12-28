@@ -15,11 +15,15 @@ int select_sealevel = 0;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 long cycletime = 0;
-#define NoOfScreens 4 //Remember to update when adding new screens
-float eepromimport =  0; // if migrating to floats for accruacy switch int sealevelpressure as well
+#define NoOfScreens 5 //Remember to update when adding new screens
+float eepromimport =  0;
 #define EEPROM_sealevelpressure_addr 0
 #define Batvolt A7
 #define sealevelpressurechangescreen 3 //god I am good at naming variables
+
+float maxheight;
+float minheight;
+float beginheight;
 
 //sleeping configuration
 float gotosleepat = 0;
@@ -210,6 +214,20 @@ void loop() {
     display.setCursor(87, 4);
     display.setTextSize(1);
     display.print(bmp.readAltitude(sealevelpressure));
+  }
+  if (currentscreen == 4){
+    float currentalt = bmp.readAltitude(sealevelpressure);
+    if (currentalt > maxheight) maxheight = currentalt;
+    if (currentalt < minheight) minheight = currentalt;
+    if (digitalRead(rotButton) == LOW) beginheight = minheight = maxheight = currentalt;
+    default_screensetup(2);
+    display.setCursor(12, 2);
+    display.print(abs(currentalt - beginheight));
+    if ((currentalt - beginheight) < 0) display.drawTriangle(0, 2, 5, 15, 10, 2, SSD1306_WHITE);
+    else if ((currentalt - beginheight) > 0) display.drawTriangle(0, 15, 5, 2, 10, 15, SSD1306_WHITE);
+    display.setCursor(2, 22);
+    display.setTextSize(1);
+    display.print(maxheight - minheight);
   }
 
   display.display();
