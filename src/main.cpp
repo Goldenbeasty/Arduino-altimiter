@@ -275,8 +275,7 @@ void loop() {
   if (currentscreen == 5){ // watchdog to manually reset arduino for example when a sensor on the I2C bus has failed due to bugs etc.
     display.drawBitmap(0,0,bitmap, imageWidth, imageHeight, WHITE); 
     if (digitalRead(rotButton)) watchdog_begintime = cycletime;
-    if ((cycletime - watchdog_begintime) > watchdogtime) resetFunc();
-    default_screensetup(1);
+    if ((cycletime - watchdog_begintime) > watchdogtime) resetFunc();    
   }
 
   display.display();
