@@ -44,7 +44,7 @@ void checkPosition(){
   encoder->tick(); // just call tick() to check the state.
 }
 
-#define rotButton 4
+#define rotButton 4 // Normally high
 #define debounce_time 500
 long last_rotButton = 0;
 
@@ -107,6 +107,10 @@ void default_screensetup(int textsize){
   display.setTextColor(SSD1306_WHITE);
   display.setTextSize(textsize);
 }
+
+void (*resetFunc)(void)=0;
+#define watchdogtime 5000
+float watchdog_begintime;
 
 void setup() {
 
@@ -268,8 +272,11 @@ void loop() {
     display.setTextSize(1);
     display.print(maxheight - minheight);
   }
-  if (currentscreen == 5){
+  if (currentscreen == 5){ // watchdog to manually reset arduino for example when a sensor on the I2C bus has failed due to bugs etc.
     display.drawBitmap(0,0,bitmap, imageWidth, imageHeight, WHITE); 
+    if (digitalRead(rotButton)) watchdog_begintime = cycletime;
+    if ((cycletime - watchdog_begintime) > watchdogtime) resetFunc();
+    default_screensetup(1);
   }
 
   display.display();
