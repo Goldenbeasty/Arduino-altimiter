@@ -122,7 +122,7 @@ void setup() {
 
   bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);  // My sensor sits on 0x76 so I had to use the alternative address
   bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                  Adafruit_BMP280::SAMPLING_X8,     /* Temp. oversampling */
                   Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
                   Adafruit_BMP280::FILTER_X16,      /* Filtering. */
                   Adafruit_BMP280::STANDBY_MS_63); /* Standby time. */
@@ -275,7 +275,7 @@ void loop() {
   if (currentscreen == 5){ // watchdog to manually reset arduino for example when a sensor on the I2C bus has failed due to bugs etc.
     display.drawBitmap(0,0,bitmap, imageWidth, imageHeight, WHITE); 
     if (digitalRead(rotButton)) watchdog_begintime = cycletime;
-    if ((cycletime - watchdog_begintime) > watchdogtime) resetFunc();    
+    if ((cycletime - watchdog_begintime) > watchdogtime) resetFunc();
   }
 
   display.display();
