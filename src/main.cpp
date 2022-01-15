@@ -15,7 +15,7 @@ int select_sealevel = 0;
 int last_Encoder_pos_screen = currentscreen;
 int rotDir = 0;
 long cycletime = 0;
-#define NoOfScreens 5 //Remember to update when adding new screens
+#define NoOfScreens 6 //Remember to update when adding new screens
 float eepromimport =  0;
 #define EEPROM_sealevelpressure_addr 0
 #define Batvolt A7
@@ -68,6 +68,10 @@ void default_screensetup(int textsize){
   display.setTextColor(SSD1306_WHITE);
   display.setTextSize(textsize);
 }
+
+void (*resetFunc)(void)=0;
+#define watchdogtime 5000
+float watchdog_begintime;
 
 void setup() {
 
@@ -228,6 +232,12 @@ void loop() {
     display.setCursor(2, 22);
     display.setTextSize(1);
     display.print(maxheight - minheight);
+  }
+  if (currentscreen == 5){
+    if (!digitalRead(rotButton)) watchdog_begintime = cycletime;
+    if ((cycletime - watchdog_begintime) > watchdogtime) resetFunc();
+    default_screensetup(1);
+    display.print("Watchdog");
   }
 
   display.display();
